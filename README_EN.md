@@ -21,7 +21,7 @@ Archify is a [Claude Skill](https://support.claude.com/en/articles/12512180-usin
 
 **Project page:** [tt-a1i.github.io/archify](https://tt-a1i.github.io/archify/)
 
-<p align="right"><a href="./README.md">中文</a></p>
+<p align="right"><a href="./README_ZH.md">中文</a></p>
 
 ## Preview
 
