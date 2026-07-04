@@ -57,6 +57,18 @@ test('cli: validate emits structured json without keeping html output', () => {
   assert.deepEqual(new Set(fs.readdirSync(tmp)), before);
 });
 
+test('cli: inspect emits architecture layout json', () => {
+  const input = path.resolve(skillRoot, '../examples/archify-repo-grid.architecture.json');
+  const result = run(['inspect', 'architecture', input]);
+  assert.equal(result.status, 0, result.stderr);
+  const parsed = JSON.parse(result.stdout);
+  assert.equal(parsed.ok, true);
+  assert.equal(parsed.diagram_type, 'architecture');
+  assert.equal(parsed.layout.mode, 'grid');
+  assert.ok(parsed.components.length >= 5);
+  assert.ok(parsed.connections.length >= 1);
+});
+
 test('cli: validate returns renderer errors for bad input', () => {
   const input = path.join(tmp, 'bad.workflow.json');
   const validateTmp = path.join(tmp, 'validate-failure-tmp');

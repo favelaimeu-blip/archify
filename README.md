@@ -61,6 +61,7 @@ Sample SaaS diagram: [`examples/web-app.html`](examples/web-app.html).
 Real-repo examples (renderer-backed JSON IR):
 
 - [`examples/archify-repo.html`](examples/archify-repo.html) — this project's skill → JSON IR → renderers pipeline
+- [`examples/archify-repo-grid.html`](examples/archify-repo-grid.html) — same pipeline with `layout.mode: "grid"` (`row`/`col` placement)
 - [`examples/maka-architecture.html`](examples/maka-architecture.html) — third-party desktop agent workbench (Maka)
 
 Workflow is not trying to replace every general-purpose flowchart. It is a technical communication diagram: swimlanes, semantic colors, a clear happy path, and secondary async / approval / trace paths.

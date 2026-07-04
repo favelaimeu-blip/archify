@@ -204,11 +204,37 @@ Architecture has the same read-schema-then-render loop as the other modes — pr
 }
 ```
 
-Render: `node renderers/architecture/render-architecture.mjs <input>.json <output>.html`.
+Render: `node bin/archify.mjs render architecture <input>.json <output>.html`.
+
+**Free placement** — `pos: [x, y]` is the component's top-left; `size: [w, h]` defaults to `[120, 60]`. Unlike typed modes there is no lane/stage grid — asymmetric placement is yours to choose. `meta.viewBox` is optional (auto-fitted).
+
+**Grid placement (#8)** — when manual coordinates are painful, set semantic cells instead of doing arithmetic:
+
+```json
+{
+  "layout": { "mode": "grid", "cols": 7, "origin": [40, 100], "gapX": 24, "gapY": 48, "cellW": 120, "cellH": 60 },
+  "components": [
+    { "id": "agents", "type": "frontend", "label": "Agent Hosts", "row": 1, "col": 1 },
+    { "id": "ir", "type": "messagebus", "label": "JSON IR", "row": 1, "col": 2 }
+  ]
+}
+```
+
+`pos` still wins when present (override one cell). This is **not** auto-layout — spacing is fixed cell math. Example: `examples/archify-repo-grid.architecture.json`.
+
+**Inspect layout (#9)** — after editing JSON, dump computed boxes without opening HTML:
+
+```bash
+node bin/archify.mjs inspect architecture my.architecture.json
+# or: node bin/archify.mjs validate architecture my.architecture.json --layout-json
+```
+
+Output includes component rects, boundaries, connection point paths, and label positions.
 
 **The renderer does the mechanical work that used to be hand-tuned**, so you only choose coordinates and meaning:
 
 - **Free coordinates** — `pos: [x, y]` is the component's top-left; `size: [w, h]` defaults to `[120, 60]`. Unlike the typed modes there is no lane/stage grid — asymmetric placement is yours to choose. `meta.viewBox` is optional (auto-fitted to your components + a legend row).
+- **Grid placement** — optional `layout.mode: "grid"` with `row`/`col` per component (see above). Not dagre; fixed cell spacing only.
 - **Boundaries from `wraps`** — list the component ids a `region` (dashed amber) or `security-group` (dashed rose) encloses; the renderer computes the box with correct 30/50 padding automatically. Never hand-arithmetic a boundary again.
 - **Connections** route like edges (`variant`, `fromSide`/`toSide`, `route: straight|orthogonal-h|orthogonal-v|auto`, `via`, `labelDx/labelDy/labelAt`). For a vertical labeled connection, push the label into the gap with `labelDy` (the validator will tell you if it lands on a box).
 - The renderer auto-emits the two-rect `c-mask` pattern, draws arrows before boxes (z-order), builds the legend from the component types you used, and **fails fast on component overlap, off-canvas components/boundaries, unknown wraps/connection ids, label-vs-component collisions, and non-finite coordinates** — the same reliability the other four modes already had.

@@ -5,8 +5,8 @@ All notable changes are documented here. Format loosely follows [Keep a Changelo
 ## [Unreleased]
 
 ### Added
-- **Layout principles in SKILL.md** — main-path-first guidance, side-branch rules, and pointers to `archify-repo` / `maka-architecture` examples.
-- **Validator fix suggestions (#7)** — label overlap and component proximity errors now include rects plus concrete `labelAt` / `labelDy` or `pos` nudges.
+- **Architecture grid placement (#8).** Optional `layout.mode: "grid"` with `row`/`col` per component; explicit `pos` still overrides a cell. Example: `examples/archify-repo-grid.architecture.json`.
+- **Layout inspect (#9).** `archify inspect architecture <file.json>` (alias: `validate --layout-json`) prints computed component rects, boundaries, connection paths, and label boxes as JSON.
 
 ## [2.9.0] — 2026-07-05
 

@@ -2,6 +2,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { esc, renderDefinitions, textUnits } from '../shared/utils.mjs';
 import { animateAttr, loadDiagram, writeDiagram, svgRootAttrs } from '../shared/cli.mjs';
+import { componentBox, boundaryBox, connectionPath } from '../shared/layout-report.mjs';
+import { gridLayout, resolveComponentPos, validateGridPlacement } from './grid.mjs';
 import {
   asArray,
   isFinitePoint,
@@ -22,11 +24,16 @@ import {
 } from '../shared/geometry.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const layoutJsonMode = process.argv.includes('--layout-json');
+const cliArgs = process.argv.filter((arg) => arg !== '--layout-json');
 const { diagram: arch, template, outPath } = loadDiagram({
   rendererDir: __dirname,
   diagramType: 'architecture',
   defaultExample: 'web-app.architecture.json',
+  argv: cliArgs,
 });
+
+const grid = gridLayout(arch);
 
 const layout = {
   defaultW: 120,
@@ -41,7 +48,7 @@ const layout = {
 
 // ---- Measure components from free coordinates --------------------------------
 function measureComponent(c) {
-  const [x, y] = Array.isArray(c.pos) ? c.pos : [NaN, NaN];
+  const [x, y] = resolveComponentPos(c, grid);
   const [w, h] = Array.isArray(c.size) ? c.size : [layout.defaultW, layout.defaultH];
   return { ...c, x, y, width: w, height: h, cx: x + w / 2, cy: y + h / 2 };
 }
@@ -110,8 +117,14 @@ function validateArchitecture() {
   if (arch.boundaries !== undefined && !Array.isArray(arch.boundaries)) problems.push('Architecture "boundaries" must be an array.');
   if (arch.cards !== undefined && !Array.isArray(arch.cards)) problems.push('Architecture "cards" must be an array.');
   if (components.size !== asArray(arch.components).length) problems.push('Component ids must be unique.');
-  if (problems.length) {
-    throw new Error(`Architecture layout validation failed:\n- ${problems.join('\n- ')}`);
+  if (grid) {
+    validateGridPlacement(arch, grid, problems);
+  } else {
+    for (const c of asArray(arch.components)) {
+      if (!Array.isArray(c.pos) || c.pos.length !== 2) {
+        problems.push(`Component "${c.id}" must include pos [x, y] when layout.mode is omitted (free placement).`);
+      }
+    }
   }
 
   for (const c of components.values()) {
@@ -180,6 +193,39 @@ function validateArchitecture() {
   if (problems.length) {
     throw new Error(`Architecture layout validation failed:\n- ${problems.join('\n- ')}`);
   }
+}
+
+function buildLayoutReport() {
+  const labels = [];
+  for (const conn of asArray(arch.connections)) {
+    if (!conn.label || !components.has(conn.from) || !components.has(conn.to)) continue;
+    const [lx, ly] = labelPoint(conn, pathFor(conn).points);
+    const w = Math.max(30, textUnits(conn.label) * 4.8 + 10);
+    labels.push({
+      text: conn.label,
+      x: Math.round(lx - w / 2),
+      y: Math.round(ly - 10),
+      width: Math.round(w),
+      height: 14,
+      labelAt: [Math.round(lx), Math.round(ly)],
+    });
+  }
+  return {
+    ok: true,
+    diagram_type: 'architecture',
+    layout: grid ? { mode: 'grid', ...grid } : { mode: 'free' },
+    viewBox,
+    components: [...components.values()].map(componentBox),
+    boundaries: boundaries.map(boundaryBox),
+    connections: asArray(arch.connections)
+      .filter((conn) => components.has(conn.from) && components.has(conn.to))
+      .map((conn) => {
+        const routed = pathFor(conn);
+        const labelAt = conn.label ? labelPoint(conn, routed.points) : null;
+        return connectionPath(conn, routed, labelAt);
+      }),
+    labels,
+  };
 }
 
 // ---- Connection routing ------------------------------------------------------
@@ -307,6 +353,10 @@ ${renderLegend()}
 }
 
 validateArchitecture();
+if (layoutJsonMode) {
+  console.log(JSON.stringify(buildLayoutReport(), null, 2));
+  process.exit(0);
+}
 writeDiagram({
   outPath,
   template,

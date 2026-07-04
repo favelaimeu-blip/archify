@@ -14,7 +14,8 @@ const TYPES = new Set(['architecture', 'workflow', 'sequence', 'dataflow', 'life
 function usage() {
   return `Usage:
   archify render <type> <input.json> [output.html]
-  archify validate <type> <input.json> [--json]
+  archify validate <type> <input.json> [--json] [--layout-json]
+  archify inspect <type> <input.json>
   archify check <output.html>
   archify examples
 
@@ -69,9 +70,24 @@ function commandExamples() {
 
 function commandValidate(args) {
   const json = args.includes('--json');
-  const rest = args.filter((arg) => arg !== '--json');
+  const layoutJson = args.includes('--layout-json');
+  const rest = args.filter((arg) => arg !== '--json' && arg !== '--layout-json');
   const [type, input] = rest;
   if (!type || !input) fail(usage());
+
+  if (layoutJson) {
+    if (type !== 'architecture') {
+      fail('--layout-json is currently supported for architecture diagrams only.');
+    }
+    const result = runNode([rendererPath(type), input, '/dev/null', '--layout-json'], { stdio: 'pipe' });
+    if (result.status !== 0) {
+      if (result.stderr) process.stderr.write(result.stderr);
+      if (result.stdout) process.stdout.write(result.stdout);
+      process.exit(result.status ?? 1);
+    }
+    process.stdout.write(result.stdout);
+    return;
+  }
 
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'archify-validate-'));
   const out = path.join(tmp, `${type}.html`);
@@ -124,6 +140,9 @@ switch (command) {
     break;
   case 'validate':
     commandValidate(args);
+    break;
+  case 'inspect':
+    commandValidate([...args, '--layout-json']);
     break;
   case 'check':
     commandCheck(args);
