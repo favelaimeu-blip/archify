@@ -4,8 +4,11 @@ All notable changes are documented here. Format loosely follows [Keep a Changelo
 
 ## [Unreleased]
 
+## [2.9.0] — 2026-07-05
+
 ### Added
 - **Unified CLI entrypoint.** Added `bin/archify.mjs` with `render`, `validate`, `check`, and `examples` commands so renderer-backed workflows have a single product-facing command surface.
+- **Architecture examples.** Added self-diagram (`examples/archify-repo.*`) and a third-party sample (`examples/maka-architecture.*`) demonstrating clean main-path layout on real repos.
 
 ## [2.8.0] — 2026-07-03
 
