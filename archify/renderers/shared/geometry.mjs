@@ -59,6 +59,17 @@ function segmentsIntersect(a, b, c, d) {
   return o1 !== o2 && o3 !== o4;
 }
 
+// True only when two segments cross through each other's interiors. Endpoint
+// touches and collinear/shared routing channels are deliberately excluded so
+// edges that fan out from the same node do not produce false positives.
+export function segmentsProperlyIntersect(a, b, c, d) {
+  const o1 = orientation(a, b, c);
+  const o2 = orientation(a, b, d);
+  const o3 = orientation(c, d, a);
+  const o4 = orientation(c, d, b);
+  return o1 !== 0 && o2 !== 0 && o3 !== 0 && o4 !== 0 && o1 !== o2 && o3 !== o4;
+}
+
 function orientation(a, b, c) {
   const value = (b[1] - a[1]) * (c[0] - b[0]) - (b[0] - a[0]) * (c[1] - b[1]);
   if (Math.abs(value) < 0.0001) return 0;

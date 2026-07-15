@@ -10,6 +10,7 @@ import assert from 'node:assert/strict';
 import {
   rectsOverlap,
   segmentIntersectsRect,
+  segmentsProperlyIntersect,
   asArray,
   isFinitePoint,
   anchor,
@@ -55,6 +56,15 @@ test('rectsOverlap: negative gap shrinks the hit box (label-collision convention
 test('segmentIntersectsRect: detects an edge crossing a node box', () => {
   assert.equal(segmentIntersectsRect({ start: [0, 5], end: [20, 5] }, rect(8, 0, 4, 10)), true);
   assert.equal(segmentIntersectsRect({ start: [0, 20], end: [20, 20] }, rect(8, 0, 4, 10)), false);
+});
+
+test('segmentsProperlyIntersect: detects an interior X crossing', () => {
+  assert.equal(segmentsProperlyIntersect([0, 0], [20, 20], [0, 20], [20, 0]), true);
+});
+
+test('segmentsProperlyIntersect: ignores shared endpoints and collinear channels', () => {
+  assert.equal(segmentsProperlyIntersect([0, 0], [10, 10], [10, 10], [20, 0]), false);
+  assert.equal(segmentsProperlyIntersect([0, 0], [20, 0], [5, 0], [15, 0]), false);
 });
 
 test('asArray coerces non-arrays to [] (degraded-mode guard)', () => {

@@ -190,4 +190,30 @@ test('workflow: edge crossing a non-endpoint node is rejected', () => {
   assert.match(stderr, /fromSide\/toSide|channel|lane\/column/);
 });
 
+test('workflow: two edges crossing away from endpoints are rejected', () => {
+  const d = {
+    schema_version: 1,
+    diagram_type: 'workflow',
+    meta: { title: 'Crossing edge pair' },
+    lanes: [
+      { id: 'top', label: 'Top lane' },
+      { id: 'bottom', label: 'Bottom lane' },
+    ],
+    nodes: [
+      { id: 'top-left', lane: 'top', col: 1, type: 'backend', label: 'A', width: 48 },
+      { id: 'top-right', lane: 'top', col: 4, type: 'backend', label: 'B', width: 48 },
+      { id: 'bottom-left', lane: 'bottom', col: 1, type: 'backend', label: 'C', width: 48 },
+      { id: 'bottom-right', lane: 'bottom', col: 4, type: 'backend', label: 'D', width: 48 },
+    ],
+    edges: [
+      { from: 'top-left', to: 'bottom-right', route: 'straight' },
+      { from: 'bottom-left', to: 'top-right', route: 'straight' },
+    ],
+  };
+  const { code, stderr } = render('workflow', d);
+  assert.notEqual(code, 0, `expected non-zero exit; stderr:\n${stderr}`);
+  assert.match(stderr, /cross outside their endpoints/);
+  assert.match(stderr, /channel|via points|lane\/column/);
+});
+
 process.on('exit', () => fs.rmSync(tmp, { recursive: true, force: true }));

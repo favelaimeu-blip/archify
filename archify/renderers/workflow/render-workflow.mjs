@@ -7,6 +7,7 @@ import {
   isFinitePoint,
   rectsOverlap,
   segmentIntersectsRect,
+  segmentsProperlyIntersect,
   suggestLabelObstacleFix,
   suggestLabelPairFix,
   anchor,
@@ -220,6 +221,7 @@ function validateWorkflow() {
     }
   }
 
+  const routedEdges = [];
   for (const edge of workflow.edges) {
     if (!nodes.has(edge.from)) problems.push(`Edge "${edge.label || edge.from}" references unknown source "${edge.from}".`);
     if (!nodes.has(edge.to)) problems.push(`Edge "${edge.label || edge.to}" references unknown target "${edge.to}".`);
@@ -236,11 +238,28 @@ function validateWorkflow() {
       for (let i = 1; i < routed.points.length; i += 1) {
         segments.push({ start: routed.points[i - 1], end: routed.points[i] });
       }
+      routedEdges.push({ edge, segments });
       for (const node of nodes.values()) {
         if (node.id === edge.from || node.id === edge.to) continue;
         if (segments.some((segment) => segmentIntersectsRect(segment, node, 2))) {
           problems.push(`Edge "${edge.from}" -> "${edge.to}" crosses node "${node.id}" — adjust fromSide/toSide, route it through a channel, or move one node to a clearer lane/column.`);
         }
+      }
+    }
+  }
+
+  for (let i = 0; i < routedEdges.length; i += 1) {
+    for (let j = i + 1; j < routedEdges.length; j += 1) {
+      const a = routedEdges[i];
+      const b = routedEdges[j];
+      const crosses = a.segments.some((left) => b.segments.some((right) =>
+        segmentsProperlyIntersect(left.start, left.end, right.start, right.end)
+      ));
+      if (crosses) {
+        problems.push(
+          `Edges "${a.edge.from}" -> "${a.edge.to}" and "${b.edge.from}" -> "${b.edge.to}" cross outside their endpoints ` +
+          '— route one through an outside/bottom/up channel, add explicit via points, or move a node to a clearer lane/column.'
+        );
       }
     }
   }
