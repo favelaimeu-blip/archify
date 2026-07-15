@@ -6,6 +6,8 @@
 
 # Archify
 
+> **Enhanced fork maintained by [@favelaimeu-blip](https://github.com/favelaimeu-blip).** This build adds workflow edge-crossing diagnostics so visually tangled arrow pairs fail with actionable routing guidance. Based on the original [tt-a1i/archify](https://github.com/tt-a1i/archify) project and distributed under the same MIT license.
+
 **Generate beautiful architecture, technical workflow, sequence, data-flow, and lifecycle diagrams in chat. Switch dark / light. Copy to clipboard or export crisp up-to-4× PNG / JPEG / WebP / SVG.**
 
 Archify is an agent skill for Claude, Codex CLI, and opencode. It turns a plain-English description of your system or process into a polished, self-contained technical diagram — a single HTML file you can open, toggle themes on, copy to the clipboard, and export at maximum resolution.
@@ -23,16 +25,16 @@ Archify is an agent skill for Claude, Codex CLI, and opencode. It turns a plain-
 
 ![License](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square)
 ![Agent Skill](https://img.shields.io/badge/Agent-Skill-7C3AED?style=flat-square)
-![Version](https://img.shields.io/badge/version-2.10.0-0891b2?style=flat-square)
+![Version](https://img.shields.io/badge/version-2.10.0--fix.1-0891b2?style=flat-square)
 
-**Project page:** [tt-a1i.github.io/archify](https://tt-a1i.github.io/archify/)
+**Repository:** [favelaimeu-blip/archify](https://github.com/favelaimeu-blip/archify) · **Upstream:** [tt-a1i/archify](https://github.com/tt-a1i/archify)
 
 <p align="right"><a href="./README_ZH.md">中文</a></p>
 
 **Start in 60 seconds:**
 
 ```bash
-npx skills add tt-a1i/archify -g
+npx skills add favelaimeu-blip/archify -g
 ```
 
 Then ask your agent: `Use archify to map this repository's runtime architecture.`
@@ -56,7 +58,7 @@ Example file: [`examples/web-app.html`](examples/web-app.html). Download or clon
 ### 1. Install
 
 ```bash
-npx skills add tt-a1i/archify -g
+npx skills add favelaimeu-blip/archify -g
 ```
 
 This installs Archify for supported agents through the open-source [`skills` CLI](https://github.com/vercel-labs/skills).
@@ -64,7 +66,7 @@ This installs Archify for supported agents through the open-source [`skills` CLI
 To try it without a permanent install:
 
 ```bash
-npx skills use tt-a1i/archify@archify --agent codex
+npx skills use favelaimeu-blip/archify@archify --agent codex
 ```
 
 Replace `codex` with `claude-code` or `opencode` when needed.
@@ -142,7 +144,7 @@ Archify is not a general-purpose drawing editor or a Mermaid theme. Its job is t
 The primary installation command is:
 
 ```bash
-npx skills add tt-a1i/archify -g
+npx skills add favelaimeu-blip/archify -g
 ```
 
 The same [`archify.zip`](archify.zip) can also be installed manually:
