@@ -45,410 +45,229 @@ Export 菜单 —— 复制到剪贴板 + 四种格式下载：
 
 ![导出菜单](docs/assets/archify-menu.png)
 
+想亲自体验：下载或克隆仓库后打开 [`examples/web-app.html`](examples/web-app.html)。按 <kbd>T</kbd> 切换主题，按 <kbd>E</kbd> 打开导出菜单。
 
-想亲自玩一下：克隆仓库后打开 [`examples/web-app.html`](examples/web-app.html)，按 <kbd>T</kbd> 切主题，<kbd>E</kbd> 打开导出菜单。给 URL 加上 `?theme=light` 或 `?openExport=1` 可以强制初始状态。
+## 快速开始
 
-## 图表类型
-
-Archify 现在有五种主要输出：
-
-| 类型 | 适合画什么 | 怎么用 |
-|---|---|---|
-| **Architecture** | 系统组件、云资源、数据库、缓存、服务边界、安全组 | 直接描述系统结构 |
-| **Workflow** | 请求生命周期、审批流程、工具调用、CI/CD、运维 runbook、事故响应 | 说明参与方、步骤顺序、关键分支 |
-| **Sequence** | API 调用链、请求生命周期、缓存回源、鉴权、异步 trace、服务交互 | 说明谁调用谁、先后顺序、返回路径 |
-| **Data Flow** | 数据管线、ETL/ELT、埋点、PII 隔离、仓库同步、数据血缘、下游消费 | 说明数据来源、处理阶段、存储位置、敏感边界和消费方 |
-| **Lifecycle** | 状态机、订单/任务/部署/Agent run 生命周期、等待态、重试、取消、超时、终态 | 说明对象有哪些状态、哪些事件触发转移、哪些状态是终态 |
-
-Architecture 用来解释系统结构——组件、边界和连接关系。例如：
-
-```
-用 archify 画一张架构图：
-React 前端调 Node.js API，PostgreSQL + Redis，部署在 AWS CloudFront 后面。
-```
-
-SaaS 样例：[`examples/web-app.html`](examples/web-app.html)
-
-真实仓库示例（renderer 驱动的 JSON IR）：
-
-- [`examples/archify-repo.html`](examples/archify-repo.html) — 本仓库 skill → JSON IR → 渲染器流水线
-- [`examples/maka-architecture.html`](examples/maka-architecture.html) — 第三方桌面 Agent 工作台 Maka
-
-Workflow 不是通用流程图的替代品，它更偏“技术沟通图”：有泳道、有语义颜色、有主路径和异步/审批/观测路径。比如：
-
-```
-用 archify 画一个 workflow：
-用户提交请求 -> Agent 规划 -> 需要审批时进入 Approval Gate -> 调工具 -> 记录 trace -> 返回结果
-```
-
-本仓库里有一个可打开的示例：[`examples/workflow-agent-tool-call-rendered.html`](examples/workflow-agent-tool-call-rendered.html)。
-
-![Workflow 示例](docs/assets/archify-workflow.png)
-
-Sequence 用来解释更细的交互顺序，比如：
-
-```
-用 archify 画一个 sequence diagram：
-用户打开页面，前端请求 API，API 校验 JWT，读取 Redis，缓存未命中则查 Postgres，返回结果并写入 trace。
-```
-
-示例：[`examples/sequence-cache-miss-request.html`](examples/sequence-cache-miss-request.html)。
-
-![Sequence 示例](docs/assets/archify-sequence.png)
-
-Data Flow 适合解释“数据资产怎么走”，比如：
-
-```
-用 archify 画一个 data flow：
-Web 和 Mobile 上报埋点，Edge API 收集事件，Consent Gate 过滤 PII，Kafka 承接事件流，
-Warehouse 存分析表，Feature Store 做每日特征，Dashboard 和 ML Model 消费下游数据。
-```
-
-示例：[`examples/dataflow-product-analytics.html`](examples/dataflow-product-analytics.html)。
-
-![Data Flow 示例](docs/assets/archify-dataflow.png)
-
-Lifecycle 用来解释“对象状态怎么变”，比如：
-
-```
-用 archify 画一个 lifecycle diagram：
-Agent Run 从 Queued 进入 Planning，再进入 Executing 和 Reviewing。需要人工确认时进入
-Needs Approval，缺少输入时进入 Blocked；工具失败可以 Failed 后重试，用户取消进入 Cancelled，
-超时进入 Expired，成功则进入 Completed。
-```
-
-示例：[`examples/lifecycle-agent-run.html`](examples/lifecycle-agent-run.html)。
-
-![Lifecycle 示例](docs/assets/archify-lifecycle.png)
-
-## 版本演进
-
-Archify 基于 [Cocoon-AI/architecture-diagram-generator](https://github.com/Cocoon-AI/architecture-diagram-generator) v1.0（只有深色主题的 HTML 输出）fork 重写。**2.0** 把模板重构成 CSS 变量驱动的可主题化系统，加入客户端导出流水线。**2.1** 加入剪贴板复制 + 键盘导航。**2.2** 加入打印样式 + 本地字体回退。**2.3** 修了位图升采样 bug，所有光栅导出改为最高 4× 原生渲染。**2.4** SVG 导出升级成双主题自持版。**2.5** 加入 workflow / sequence / data-flow / lifecycle 四种渲染器、Mermaid 输入指引、CJK-aware 文本测量、golden 测试和 CI。**2.6** 把 architecture 模式也升级到 schema + layout 校验。**2.7** 强化 workflow：phase header、group、exception lane、mainPath 主路径 lint、同泳道正交连线，以及生成后 HTML/SVG 检查器。**2.8** 加入按需 trace 动效，并拒绝 workflow 连线穿过无关节点。**2.9** 加入统一 CLI（`bin/archify.mjs`）和真实仓库 architecture 示例。**2.10** 加入 validator 修复建议、architecture grid（`row`/`col`）和 `archify inspect` 布局 JSON。
-
-| 能力 | v1.0 | 2.0 | 2.1 | 2.2 | 2.3 | 2.4 | 2.5 | 2.6 | 2.7 | 2.8 | 2.9 | 2.10 |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 深色主题 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | 同 | 同 | 同 |
-| 浅色主题 | — | 切换 | 切换 | 切换 | 切换 + <kbd>T</kbd> 快捷键 | 同 | 同 | 同 | 同 | 同 | 同 | 同 |
-| PNG / JPEG / WebP 下载 | 手动截图 | 2× 位图放大 | 1×/2×/4× 选择器（仍是放大）| 同 | **4× 原生光栅化，不糊** | 同 | **浅色导出泳道配色修复** | 同 | 同 | 同 | 同 | 同 |
-| SVG 下载 | — | 矢量 + 内联样式（单主题）| 同 | 同 | 同 | **双主题自持**（`@media prefers-color-scheme`）| 同（泳道配色修复）| 同 | 同 | 同 | 同 | 同 |
-| 复制 PNG 到剪贴板 | — | — | ✓ | 同 | 同（最高 4×）| 同 | **Safari 修复** | 同 | 同 | 同 | 同 | 同 |
-| 键盘快捷键 | — | — | <kbd>T</kbd>/<kbd>E</kbd> + 菜单导航 | 同 | 同 | 同 | 同 | 同 | 同 | 同 | 同 | 同 |
-| 可访问性 | — | — | ARIA + focus-visible | 同 | 同 | 同 | 同（+ 菜单 a11y 修复）| 同 | 同 | 同 | 同 | 同 |
-| 打印样式表 | — | — | — | ✓ | ✓（+ 横向 + 2 列卡片）| 同 | 同 | 同 | 同 | 同 | 同 | 同 |
-| 导出时本地字体回退 | — | — | — | ✓ | ✓ | 同 | **+ CJK 字体回退** | 同 | 同 | 同 | 同 | 同 |
-| 样式模型 | 内联 `fill` / `stroke` | CSS 变量 + 语义 class | 同 | 同 | 同 | 同 | 同 | 同 | 同 | 同 | 同 | 同 |
-| 类型化渲染器 + schema 校验 | — | — | — | — | — | — | workflow / sequence / data-flow / lifecycle | **+ architecture** | 同 | 同 | 同 | 同 |
-| Workflow 结构辅助 | — | — | — | — | — | — | 泳道 + 路由连线 | 同 | **phase、group、exception lane、mainPath lint** | **连线穿节点 guard** | 同 | 同 |
-| 生成后 artifact 检查 | — | — | — | — | — | — | — | — | **✓** | 同 | 同 | 同 |
-| Trace 动效 | — | — | — | — | — | — | — | — | — | **按需开启** | 同 | 同 |
-| 统一 CLI | — | — | — | — | — | — | — | — | — | — | **✓** | 同 |
-| 真实仓库 architecture 示例 | — | — | — | — | — | — | — | — | — | — | **✓** | 同 |
-| Architecture grid + layout inspect | — | — | — | — | — | — | — | — | — | — | — | **✓** |
-| Validator 修复建议 | — | — | — | — | — | — | — | — | — | — | — | **✓** |
-
-## 快速上手
-
-### 1. 一条命令安装
-
-全局安装 Archify，然后按提示选择你使用的 agent：
+### 1. 安装
 
 ```bash
 npx skills add tt-a1i/archify -g
 ```
 
-想先试用、不做常驻安装？下面这条命令会用 skill 的临时副本启动 Codex：
+这条命令通过开源的 [`skills` CLI](https://github.com/vercel-labs/skills) 为支持的 Agent 安装 Archify。
+
+如果只想临时体验，不做永久安装：
 
 ```bash
 npx skills use tt-a1i/archify@archify --agent codex
 ```
 
-把 `codex` 换成 `claude-code` 或 `opencode`，即可启动对应 agent。这些命令来自开源的 [`skills` CLI](https://github.com/vercel-labs/skills)。
+需要时可以把 `codex` 换成 `claude-code` 或 `opencode`。
 
-### 2. 复制一条 prompt
+### 2. 先画一个边界清楚的视图
 
-**梳理真实仓库：**
-
-```text
-分析这个代码仓库，然后用 archify 生成一张架构图，展示运行时组件、数据流、外部依赖和信任边界。
-```
-
-**解释请求链路：**
+不要一开始就要求一张图解释整个仓库。先从 Overview 开始：
 
 ```text
-用 archify 画出这条登录链路：浏览器 -> Web App -> API -> JWT 校验 -> Redis 会话查询 -> PostgreSQL 回退。清楚标出缓存未命中路径。
+分析这个仓库，然后使用 archify 生成一张高层运行时架构图。
+只保留 8–12 个核心组件，突出一条主要请求或数据路径，并标出外部依赖与信任边界。
+辅助信息放进说明卡片，不要继续增加连线。
 ```
 
-**展示交付流程：**
+如果只想解释一条调用链：
 
 ```text
-用 archify 生成一张 CI/CD 工作流图：pull request -> 测试 -> 审批门 -> 构建镜像 -> 部署 staging -> 冒烟测试 -> 部署 production；失败时走回滚路径。
+使用 archify 画出这条登录流程：Browser -> Web App -> API -> JWT 校验 ->
+Redis Session 查询 -> PostgreSQL 回源。把缓存未命中作为次要路径。
 ```
 
-发布版 skill 已内置 standalone Schema validator，安装或临时试用后即可直接 render，无需执行 `npm install`，也没有运行时依赖。
+### 3. 在对话中细调
 
-### 3. 在对话中迭代
+只要当前会话里仍保留源 JSON，就可以继续说：`增加 Redis`、`把鉴权移到左侧`、`突出回滚路径`。
 
-继续提出明确的小改动，例如「加一个 Redis」「把鉴权移到左边」「高亮回滚路径」。Archify 会交付一个可在任意浏览器打开的单文件 HTML，并可导出 PNG、JPEG、WebP 或 SVG。
+最终得到的是一个可直接在现代浏览器中打开的 HTML 文件，并可导出 PNG、JPEG、WebP 或 SVG。
 
-### 其他安装方式
+## 图表类型
 
-Archify 打包成标准 agent skill 目录（`archify/SKILL.md`），同一个 [`archify.zip`](archify.zip) 可以用于 Claude、Codex CLI 和 opencode。
+先确定你想回答的问题，再选择对应视图：
 
-**Claude.ai：**
-1. 下载 [`archify.zip`](archify.zip)
-2. 进入 **Settings → Capabilities → Skills**
-3. 点 **+ Add**，上传 zip
-4. 打开开关
+| 类型 | 最适合 | Prompt 中应包含 |
+|---|---|---|
+| **Architecture** | 组件、服务、存储和系统边界 | 范围、核心组件、主要路径 |
+| **Workflow** | CI/CD、审批、工具调用、runbook | 参与者、顺序、分支、异常 |
+| **Sequence** | API 调用、缓存回源、鉴权和异步链路 | 调用方、被调用方、返回和时序 |
+| **Data Flow** | 数据管线、血缘、PII 和下游消费 | 来源、转换、存储、敏感边界 |
+| **Lifecycle** | 状态机、等待、重试和终态 | 状态、事件、重试与取消路径 |
+
+Architecture 示例：
+
+- [`examples/web-app.html`](examples/web-app.html) — 精简 SaaS 架构
+- [`examples/archify-repo.html`](examples/archify-repo.html) — Archify 的 Skill → JSON IR → Renderer 流水线
+- [`examples/archify-repo-grid.html`](examples/archify-repo-grid.html) — 显式 `row` / `col` 网格布局
+- [`examples/maka-architecture.html`](examples/maka-architecture.html) — 第三方桌面 Agent 工作台
+
+Workflow 使用泳道、清晰主路径和克制的次要分支。
+
+![Workflow 示例](docs/assets/archify-workflow.png)
+
+Sequence 聚焦一段随时间展开的交互。
+
+![Sequence 示例](docs/assets/archify-sequence.png)
+
+Data Flow 明确表现数据移动、转换以及敏感边界。
+
+![Data Flow 示例](docs/assets/archify-dataflow.png)
+
+Lifecycle 区分正常进展、等待态、重试路径和终态。
+
+![Lifecycle 示例](docs/assets/archify-lifecycle.png)
+
+## 为什么用 Archify
+
+- **用布局判断代替通用自动布局** —— Agent 根据要讲的故事决定层级、间距、线路和视觉重点。
+- **Typed JSON IR** —— 五种图都由对应 Schema 和 Renderer 驱动。
+- **交付前验证** —— Schema、布局、HTML 和 SVG 检查会尽早发现结构错误和明显的可读性问题。
+- **便于分享** —— 一个 HTML 文件即可打开，无需服务器或前端框架；外部字体不可用时会使用本地字体。
+- **语义技术标签** —— `postgres`、`redis`、`aws.lambda`、`github-actions` 等名称会参与视觉分类，不需要沉重的图标运行时。
+
+Archify 不是通用绘图编辑器，也不是 Mermaid 换肤工具。它的目标是把技术意图编译成适合沟通的成品图。
+
+## 安装方式
+
+推荐直接使用：
+
+```bash
+npx skills add tt-a1i/archify -g
+```
+
+同一个 [`archify.zip`](archify.zip) 也可以手动安装：
+
+| 使用方式 | 安装位置或方法 | 能力 |
+|---|---|---|
+| **Claude Code** | `~/.claude/skills/` 或 `.claude/skills/` | 完整 Renderer + 校验流程 |
+| **Codex CLI** | `~/.agents/skills/` 或 `.agents/skills/` | 完整 Renderer + 校验流程 |
+| **opencode** | `~/.config/opencode/skills/`、`.opencode/skills/` 或 `.agents/skills/` | 完整 Renderer + 校验流程 |
+| **Claude.ai** | 在 Settings → Capabilities → Skills 上传 `archify.zip` | 取决于沙箱是否允许执行 Node.js |
+| **Project Knowledge** | 把 `archify.zip` 上传到项目知识库 | 仅 Prompt 驱动的 Architecture 模式 |
+
+Claude.ai 的 Skills 上传入口：
 
 ![Claude Skills 设置页](docs/assets/claude-skills-settings.png)
 
-**Claude Code CLI：**
-```bash
-# 全局（所有项目可用）
-unzip archify.zip -d ~/.claude/skills/
+手动安装就是把压缩包解压到对应目录。分发包已包含独立校验器，不需要执行 `npm install`。
 
-# 或者仅当前项目
-unzip archify.zip -d ./.claude/skills/
-```
+## 工作原理
 
-**Codex CLI：**
-```bash
-# 全局（所有项目可用）
-unzip archify.zip -d ~/.agents/skills/
+Renderer 驱动的图会经过一条简短、可检查的流水线：
 
-# 或者仅当前项目
-unzip archify.zip -d ./.agents/skills/
-```
-
-**opencode：**
-```bash
-# 全局（opencode 原生目录）
-unzip archify.zip -d ~/.config/opencode/skills/
-
-# 或者仅当前项目
-unzip archify.zip -d ./.opencode/skills/
-
-# 也可以复用上面 Codex 的通用 agent 目录
-unzip archify.zip -d ~/.agents/skills/
-```
-
-renderer 驱动的图在交付前会走一个小质量闭环：
-
-| 步骤 | 做什么 |
+| 步骤 | 发生什么 |
 |---|---|
-| **生成 JSON IR** | agent 先写 architecture / workflow / sequence / dataflow / lifecycle 的类型化描述，而不是直接手改最终 SVG。 |
-| **Validate** | 内置 standalone validator 检查 JSON Schema，无需安装运行时依赖。 |
-| **Render** | 类型化渲染器生成单文件 HTML/SVG。 |
-| **Check artifact** | 生成后检查器拦截 malformed SVG、非有限坐标、误生成的两点斜线箭头、穿过图例的连线。 |
-| **Iterate** | 修复尽量落在 JSON IR 或语义 class 上，局部调整不需要整张图从头生成。 |
+| **生成 JSON IR** | Agent 先生成类型化描述，而不是直接修改最终 SVG。 |
+| **校验** | 内置独立校验器检查 Schema，无需安装运行时依赖。 |
+| **渲染** | 对应 Renderer 生成 HTML/SVG。 |
+| **检查** | 布局和 Artifact 检查发现无效坐标、损坏 SVG 和不安全线路。 |
+| **迭代** | 修改集中在 JSON IR，尽量保持无关结构稳定。 |
 
-也可以直接运行最终 artifact 检查：
-
-```bash
-node scripts/check-render-output.mjs output.html
-```
-
-内置 CLI 对这些 renderer / checker 命令做了一层统一包装：
+从仓库源码运行 CLI：
 
 ```bash
+cd archify
 node bin/archify.mjs doctor
 node bin/archify.mjs demo /tmp/archify-demo
-node bin/archify.mjs render workflow examples/agent-tool-call.workflow.json workflow.html
+node bin/archify.mjs render workflow examples/agent-tool-call.workflow.json /tmp/workflow.html
 node bin/archify.mjs validate workflow examples/agent-tool-call.workflow.json --json
-node bin/archify.mjs check workflow.html
+node bin/archify.mjs check /tmp/workflow.html
 node bin/archify.mjs examples
 ```
 
-渲染器生成的图也可以按需开启轻量动效，适合 demo 或演示场景：
+演示场景可以选择开启轻量 Trace 动画：
 
 ```json
 { "meta": { "title": "Release Flow", "animation": "trace" } }
 ```
 
-Trace animation 直接运行在生成的 HTML/SVG 里：箭头按顺序流动，节点轻微 pulse；用户开启 `prefers-reduced-motion` 时会自动禁用运动。默认不写 `animation`，输出仍是静态图。
+动画会遵循 `prefers-reduced-motion`。不设置 `animation` 时保持静态。
 
-**Claude.ai Projects：**
-把 [`archify.zip`](archify.zip) 上传到 Project Knowledge 就行。
+## 使用生成结果
 
-三种安装方式的能力差异：
+在现代浏览器中打开 HTML，右上角提供两个入口：
 
-| 安装方式 | 能力 |
+- **Theme** —— 切换深色和浅色，快捷键 <kbd>T</kbd>。
+- **Export** —— 复制 PNG，或下载 PNG、JPEG、WebP、SVG，快捷键 <kbd>E</kbd>。
+
+| 格式 | 适合 |
 |---|---|
-| **Claude Code** | 完整 —— 可运行类型化渲染器 + schema 校验 |
-| **Codex CLI** | 完整 —— 安装到 `~/.agents/skills/` 或 `.agents/skills/` |
-| **opencode** | 完整 —— 安装到 `.opencode/skills/`、`.agents/skills/` 或其他支持的 skills 目录 |
-| **Claude.ai 上传 zip** | 通常可用 —— 取决于沙箱是否允许执行 Node.js |
-| **Project Knowledge** | 仅架构模式 —— 不执行代码，纯 prompt 驱动 |
+| **复制 PNG** | 飞书、Slack、Notion、GitHub 评论和快速评审 |
+| **PNG / JPEG / WebP** | 演示文稿、文档、网站和印刷 |
+| **SVG** | README、博客、Figma、Illustrator 和无损缩放 |
 
-## 用生成的 HTML
+位图会以浏览器允许的最高安全分辨率原生渲染，最高 4×。图太大时会自动降到 3× 或 2×，避免超过 Canvas 限制。
 
-浏览器打开文件，右上角会有两个按钮：
+导出的 SVG 同时包含深色、浅色变量和 `prefers-color-scheme`，因此同一个文件可以跟随读者的系统主题。
 
-- **主题按钮**（Dark / Light）—— 一键切换，持久化保存。快捷键 <kbd>T</kbd>。
-- **Export 菜单** —— 五个操作：复制到剪贴板 + 4 种格式下载。快捷键 <kbd>E</kbd>。
+常用 URL 参数：
 
-### Export 菜单
+- `?theme=light` 或 `?theme=dark` —— 固定初始主题。
+- `?openExport=1` —— 加载后自动打开导出菜单。
 
-| 操作 | 做什么 |
+WebP 和剪贴板能力取决于浏览器。外部字体不可用时，HTML 会使用本地字体 fallback。
+
+## Prompt 模板
+
+**仓库概览**
+
+```text
+梳理这个仓库的运行时架构，最多保留 12 个核心组件。
+展示主要请求路径、外部系统和信任边界，把实现细节放进说明卡片。
+```
+
+**CI/CD Workflow**
+
+```text
+画一张 CI/CD workflow：pull request -> tests -> approval -> build image ->
+staging -> smoke test -> production。把 rollback 画成次要失败路径。
+```
+
+**数据血缘**
+
+```text
+画一张从 Web、Mobile 事件经过 Consent Gate、Kafka、Warehouse、Feature Store，
+最终到 Dashboard 和 ML 消费方的数据流图，并明确标出 PII 边界。
+```
+
+## 参考
+
+语义标签会参与颜色和分组：
+
+| 示例 | 类别 |
 |---|---|
-| **Copy to clipboard** | 当前图以 PNG 格式直接进系统剪贴板，粘贴到 Slack / Notion / 飞书 / GitHub / Figma |
-| **Download PNG / JPEG / WebP** | 保存为光栅图。JPEG / WebP 会用当前主题的背景色填充（无透明）；PNG 保留透明度 |
-| **Download SVG** | 矢量导出，所有样式内联，**双主题自持**。内嵌了 dark + light 两套 CSS 变量 + `@media (prefers-color-scheme)` 规则 —— 同一个 `.svg` 贴到 GitHub README / 博客，读者切深浅色图自己跟着切。可以在 Figma / Illustrator 里继续编辑。无损缩放 |
+| `react`、`nextjs`、`ios`、`browser` | 前端 |
+| `node`、`go-service`、`python-worker`、`api-gateway` | 后端 |
+| `postgres`、`redis`、`s3`、`bigquery`、`snowflake` | 数据和存储 |
+| `aws.lambda`、`gcp.pubsub`、`azure.functions`、`kubernetes` | 云与基础设施 |
+| `auth0`、`oauth`、`vault`、`security-group` | 安全 |
+| `kafka`、`rabbitmq`、`sqs`、`nats` | 消息系统 |
+| `stripe`、`github-actions`、`openai`、`slack` | 外部系统 |
 
-所有光栅导出（复制 + PNG/JPEG/WebP）都由浏览器在**最高 4× 源分辨率**下原生光栅化；超大图会自动降到 3× / 2× 以避开浏览器 canvas 上限。序列化后的 SVG 被设为 `4 × viewBox` 大小，浏览器直接在该分辨率下光栅化矢量，canvas 按自然大小绘制（没有位图升采样）。结果是视网膜屏、演示幻灯、打印输出都真正清晰。
+Renderer 输入请查看 [Schema 说明](archify/schemas/README.md)，版本历史请查看 [CHANGELOG.md](CHANGELOG.md)。
 
-没有倍数选择器 —— 永远选择当前浏览器能稳定生成的最高清晰度。
+## 当前状态与路线图
 
-### 键盘快捷键
+Archify 2.10 的五种 Renderer 模式都已经使用 Typed JSON IR。接下来的重点是稳定局部修改、改善布局诊断，并让生成结果更容易检查和分享。
 
-- 任何位置按 <kbd>T</kbd> —— 切换主题
-- 任何位置按 <kbd>E</kbd> —— 打开 Export 菜单
-- 菜单里 <kbd>↑</kbd> <kbd>↓</kbd> —— 上下选项
-- <kbd>Home</kbd> / <kbd>End</kbd> —— 跳到第一 / 最后一项
-- <kbd>Enter</kbd> / <kbd>Space</kbd> —— 触发当前项
-- <kbd>Esc</kbd> —— 关闭菜单
-
-### URL 参数
-
-- `?theme=light` 或 `?theme=dark` —— 强制启动主题（确定性截图、分享链接、文档嵌入场景）
-- `?openExport=1` —— 页面加载时自动展开 Export 菜单（演示 / 文档截图）
-
-### 注意事项
-
-- **WebP 兼容性**：依赖浏览器的 canvas 编码器。老版 Safari 不支持时，菜单项会变灰不可选。PNG 和 JPEG 通用。
-- **剪贴板支持**：图片复制需要 `ClipboardItem` + `navigator.clipboard.write`（Chromium、Firefox 127+、Safari 16+）。不支持时 Copy 选项变灰。
-- **导出字体**：光栅图会使用系统等宽字体回退（`ui-monospace` / Menlo / Consolas），因为沙箱图像渲染上下文拿不到 Google Fonts。本机装了 JetBrains Mono 会自动用上，完全像素级一致。
-
-## 常用 prompt
-
-**Web 应用：**
-```
-用 archify 画一张架构图：
-- React 前端
-- Node.js/Express API
-- PostgreSQL 数据库
-- Redis 缓存
-- JWT 鉴权
-```
-
-**AWS Serverless：**
-```
-用 archify 画：
-- CloudFront CDN
-- API Gateway
-- Lambda（Node.js）
-- DynamoDB
-- S3 存静态资源
-- Cognito 做鉴权
-```
-
-**微服务：**
-```
-用 archify 画一张微服务架构图：
-- React Web + 移动端
-- Kong API Gateway
-- 用户服务（Go）、订单服务（Java）、商品服务（Python）
-- PostgreSQL、MongoDB、Elasticsearch
-- Kafka 做事件流
-- K8s 做编排
-```
-
-**数据流 / 埋点分析：**
-```
-用 archify 画一个 data flow：
-- Web App 和 Mobile SDK 产生 clickstream events
-- Edge API 收集事件
-- Consent Gate 过滤身份信息和 PII
-- Kafka/Event Stream 承接 accepted events
-- Warehouse 存 normalized facts
-- Feature Store 每日生成 feature vectors
-- Dashboards 和 ML Model 消费下游数据
-```
-
-**状态机 / 生命周期：**
-```
-用 archify 画一个 lifecycle diagram：
-- 任务从 Queued 开始
-- Planning 生成计划
-- Executing 调用工具
-- Reviewing 做质量检查
-- Needs Approval 和 Blocked 是等待态
-- Failed 可重试，Cancelled / Expired / Completed 是终态
-```
-
-## 语义配色
-
-| 类型 | 颜色 | 用途 |
-|---|---|---|
-| Frontend | 青色 | 客户端 / UI / 终端设备 |
-| Backend | 翠绿 | 服务 / API / 后台进程 |
-| Database | 紫色 | 数据库 / 存储 / AI/ML |
-| Cloud / AWS | 琥珀 | 托管云服务 / 基础设施 |
-| Security | 玫红 | 鉴权 / 安全组 / 加密 |
-| Message Bus | 橙色 | Kafka / RabbitMQ / SNS / 事件总线 |
-| External | 灰色 | 第三方 / 通用外部系统 |
-
-每种颜色在深色 / 浅色主题下都有配套取值，切主题会同步切换。
-
-### 语义技术标签
-
-Archify 不是要内置完整 AWS / Azure / GCP 图标运行时。它把技术名和可选标签当成语义提示，用来辅助配色、分组和文案：
-
-| 标签示例 | 视觉类别 |
-|---|---|
-| `react`、`nextjs`、`ios`、`android`、`browser` | Frontend |
-| `node`、`go-service`、`python-worker`、`api-gateway` | Backend |
-| `postgres`、`mysql`、`redis`、`s3`、`bigquery`、`snowflake` | Database / storage |
-| `aws.lambda`、`aws.cloudfront`、`gcp.pubsub`、`azure.functions`、`kubernetes` | Cloud / infrastructure |
-| `auth0`、`cognito`、`oauth`、`vault`、`security-group` | Security |
-| `kafka`、`rabbitmq`、`sns`、`sqs`、`nats` | Message bus |
-| `stripe`、`github-actions`、`openai`、`anthropic`、`slack` | External |
-
-当具体技术栈重要时，可以在 prompt 或 JSON IR 里写这些标签。最终输出仍然是自持 HTML/SVG；标签只增强语义样式和布局，不引入重型图标依赖。
-
-## 实现细节
-
-- **样式模型**：`:root` + `[data-theme="light"]` 上的 CSS 变量；SVG 元素引用语义 class（`c-frontend`、`t-muted`、`a-emphasis` 等）。切换 `<html>` 上的 `data-theme` 会重写包括渐变、网格、箭头、遮罩在内的整张图。
-- **导出流水线**：克隆 SVG，内联 host `<style>`，解析当前主题变量并写入 clone 的 `:root` 规则，然后用 `XMLSerializer` 序列化。光栅格式下，clone 的 `width`/`height` 被设为 `4 × viewBox`，浏览器按目标分辨率原生光栅化矢量；canvas 尺寸对齐 clone 后按自然大小绘制（无位图升采样），`toBlob(mime)` 生成文件。JPEG 会显式补背景色（无 alpha）。如果目标分辨率超过浏览器 canvas 上限，自动降到 3× 或 2×。
-- **单文件**：一个 HTML，一个 Google Fonts `<link>`，内联 SVG，约 19 KB 嵌入 JS。生成的 HTML 和发布版 renderer 都是零运行时依赖 —— 无构建步骤、无 JS 框架、无服务端。
-- **生成后检查**：`bin/archify.mjs validate`、渲染器布局检查和 `scripts/check-render-output.mjs` 会在交付前检查生成的图：schema 合法、SVG 坐标有限、没有误生成两点斜线箭头、箭头线段不穿过图例。
-- **浏览器支持**：任何主流浏览器（Chrome、Safari、Firefox、Edge）。WebP 导出需要 canvas 支持 `image/webp`。
+规划和产品边界请查看 [ROADMAP.md](ROADMAP.md)。自动 Mermaid Parser、通用自动布局、托管分享服务和 WYSIWYG 编辑器目前都不是目标。
 
 ## 致谢
 
-Archify 是 [**Cocoon-AI/architecture-diagram-generator**](https://github.com/Cocoon-AI/architecture-diagram-generator)（MIT，v1.0）的 fork 重写，原作者 [Cocoon AI](mailto:hello@cocoon-ai.com)。原版精致的视觉语言 —— 配色、网格背景、摘要卡片布局、JetBrains Mono 字体 —— 完整保留。视觉设计功劳归属原作者。
+Archify 基于 Cocoon AI 的 [Cocoon-AI/architecture-diagram-generator](https://github.com/Cocoon-AI/architecture-diagram-generator) v1.0 进行 Fork 和重写。
 
-Archify 2.x 贡献：
-
-- 模板重构为 CSS 变量主题系统（深色 + 浅色）
-- 主题切换 + `localStorage` 持久化 + `prefers-color-scheme` 默认
-- 内置 PNG / JPEG / WebP / SVG 导出菜单 + 复制到剪贴板
-- 4× 原生光栅化（修复升采样导致的模糊）
-- SVG 导出双主题自持（单文件跟随宿主 `prefers-color-scheme`）
-- 键盘导航 + 可访问性语义
-- 打印样式表 + 本地字体回退
-- Architecture、workflow、sequence、data-flow、lifecycle 五类渲染器 + schema 校验
-- 生成后 artifact 检查，约束最终 HTML/SVG 质量
-- 统一 CLI（`bin/archify.mjs`）：render / validate / check / examples
-- 真实仓库 architecture 示例（`archify-repo`、`maka-architecture`）
-- 更新后的 `SKILL.md` 引导 Claude 使用 class 化、可主题化的画图方式
-
-两个项目都是 MIT 协议。
-
-## 路线图
-
-详见 [ROADMAP.md](ROADMAP.md)。
-
-下一站是 **v3.0 — JSON IR 稳定迭代**：引入极简 `diagram.json` 中间格式，让 Claude 做局部坐标修改时不会漂移无关组件，同时支持 `git diff` 友好和 theme/palette 不重渲染。
-
-> **关于 Mermaid 输入：** 已实现 —— `SKILL.md` 现在有专门的「Mermaid as an Input Dialect」章节，把 flowchart / sequenceDiagram / stateDiagram 映射到 workflow / sequence / lifecycle。注意走的是 prompt 而不是 parser：经实验验证（auto-layout + archify CSS 并不比原生 Mermaid 好看多少），自动解析器路线已砍掉。archify 的美学核心是 Claude 的布局判断，不是 CSS —— 贴 Mermaid 代码，Claude 从零布局出 archify 风格图。
->
-> 原 v2.4 / v2.5 计划（`?exportScale=N`、色盲调色板、分享链接）也已砍掉。理由见 [ROADMAP「Not planned」段落](ROADMAP.md#not-planned)。
+原项目的视觉语言仍归功于 Cocoon AI。Archify 2.x 在其基础上增加了主题、导出、Typed Renderer、校验、无障碍支持和统一 CLI。两个项目都采用 MIT License。
 
 ## License
 
-[MIT](LICENSE) —— 自由使用、修改、再分发。
+[MIT](LICENSE) —— 可以自由使用、修改和分发。
 
 ## 参与贡献
 
-欢迎 issue、PR、分享你画的图。
+欢迎提交 Issue、Pull Request 和分享生成的图。报告产物问题时，请尽量附上 Prompt、图表类型和 Archify 版本。
